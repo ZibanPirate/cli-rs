@@ -131,6 +131,7 @@ jobs:
       - name: Restore coverage report
         uses: actions/download-artifact@v4
         with:
+          merge-multiple: true
           path: ./coverage/${{ matrix.os }}
 
       - name: SonarQube Scan
