@@ -20,6 +20,8 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build
         run: cargo build
@@ -40,6 +42,8 @@ jobs:
           components: rustfmt
 
       - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Check formatting
         run: cargo fmt --all -- --check
@@ -60,6 +64,8 @@ jobs:
           components: clippy
 
       - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Run clippy
         run: cargo clippy -- -D warnings
@@ -78,6 +84,8 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.lock') }}
 
       - uses: cargo-bins/cargo-binstall@main
 
