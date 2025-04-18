@@ -14,10 +14,10 @@ pub trait CliInstaller {
     }
     fn bin_path(&self) -> PathBuf {
         let home = if cfg!(windows) {
-                std::env::var("USERPROFILE").unwrap()
-            } else {
-                std::env::var("HOME").unwrap()
-            };
+            std::env::var("USERPROFILE").unwrap()
+        } else {
+            std::env::var("HOME").unwrap()
+        };
 
         PathBuf::from(format!(
             "{}/.cli-man/bin/{}/{}/{}",

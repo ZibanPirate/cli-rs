@@ -51,12 +51,18 @@ fn test_bin_path() {
     #[cfg(not(target_os = "windows"))]
     assert_eq!(
         installer.bin_path(),
-        PathBuf::from(format!("{}/.cli-man/bin/testcli/1.0.0/testcli", std::env::var("HOME").unwrap()))
+        PathBuf::from(format!(
+            "{}/.cli-man/bin/testcli/1.0.0/testcli",
+            std::env::var("HOME").unwrap()
+        ))
     );
     #[cfg(target_os = "windows")]
     assert_eq!(
         installer.bin_path(),
-        PathBuf::from(format!("{}/.cli-man/bin/testcli/1.0.0/testcli.exe", std::env::var("USERPROFILE").unwrap()))
+        PathBuf::from(format!(
+            "{}/.cli-man/bin/testcli/1.0.0/testcli.exe",
+            std::env::var("USERPROFILE").unwrap()
+        ))
     );
 }
 
