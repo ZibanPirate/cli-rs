@@ -119,7 +119,11 @@ jobs:
   sonarqube:
     name: SonarQube
     needs: [build, fmt, clippy, test, prettier]
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-latest, windows-latest]
     steps:
       - name: Check out
         uses: actions/checkout@v4
@@ -127,8 +131,7 @@ jobs:
       - name: Restore coverage report
         uses: actions/download-artifact@v4
         with:
-          path: ./coverage
-          merge-multiple: true
+          path: ./coverage/${{ matrix.os }}
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5
