@@ -64,8 +64,10 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
+      - uses: cargo-bins/cargo-binstall@main
+
       - name: Install tarpaulin
-        run: cargo install cargo-tarpaulin
+        run: cargo binstall cargo-tarpaulin
 
       - name: Run tests
         # todo-zm: bring back coverage threshold to 100
