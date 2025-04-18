@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 
+#[cfg(target_os = "windows")]
 const WINDOWS_SUFFIX: &str = ".exe";
 
 pub trait CliInstaller {
