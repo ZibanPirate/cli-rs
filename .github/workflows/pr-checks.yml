@@ -84,3 +84,14 @@ jobs:
       - name: Check prettier formatting
         run: |
           npx -y prettier --check .
+
+  sonarqube:
+    name: SonarQube
+    needs: [build, fmt, clippy, test, prettier]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
