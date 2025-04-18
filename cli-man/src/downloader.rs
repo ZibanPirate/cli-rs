@@ -36,7 +36,7 @@ pub fn download_and_install(url: &str, bin_path: &PathBuf) {
             .expect("Failed to get metadata")
             .permissions();
         perms.set_mode(0o755);
-        fs::set_permissions(&bin_path, perms).expect("Failed to set permissions");
+        fs::set_permissions(bin_path, perms).expect("Failed to set permissions");
         println!("Permission applied to {}", bin_path.display());
     }
 }

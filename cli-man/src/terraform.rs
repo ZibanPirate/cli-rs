@@ -3,7 +3,7 @@ use crate::{Cli, CliInstaller, downloader::download_and_install};
 pub struct Terraform;
 
 impl Terraform {
-    pub fn new(version: impl Into<String>) -> TerraformInstaller {
+    pub fn new_installer(version: impl Into<String>) -> TerraformInstaller {
         TerraformInstaller {
             version: version.into(),
         }

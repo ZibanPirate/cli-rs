@@ -19,9 +19,7 @@ pub fn get_cli_run_cwd() -> PathBuf {
         });
 
     let cli_run_cwd = cli_run_cwd.replace("~", &env::var("HOME").unwrap());
-    let cli_run_cwd = fs::canonicalize(cli_run_cwd).unwrap();
-
-    cli_run_cwd
+    fs::canonicalize(cli_run_cwd).unwrap()
 }
 
 pub fn cli_run(cmd: impl Into<PathBuf>, args: Vec<impl Into<String>>) {
