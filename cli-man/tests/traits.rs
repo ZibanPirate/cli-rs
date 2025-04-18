@@ -70,8 +70,7 @@ fn test_uninstall_nonexistent() {
     cli.uninstall();
 }
 
-// todo-zm: bring this back
-// #[test]
+#[test]
 fn test_uninstall_existing_dir() {
     use std::fs;
     use std::io::Write;
