@@ -1,5 +1,7 @@
 use std::path::PathBuf;
 
+const WINDOWS_SUFFIX: &str = ".exe";
+
 pub trait CliInstaller {
     fn name(&self) -> &str;
     fn version(&self) -> &str;
