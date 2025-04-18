@@ -99,7 +99,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: coverage
-          key: ${{ runner.os }}-coverage-${{ github.run_id }}
+          key: coverage-${{ github.run_id }}
 
   prettier:
     runs-on: ubuntu-latest
@@ -128,7 +128,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: coverage
-          key: ${{ runner.os }}-coverage-${{ github.run_id }}
+          key: coverage-${{ github.run_id }}
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5
