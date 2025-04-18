@@ -1,10 +1,6 @@
 name: Checks
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
-    branches:
-      - "**"
   push:
     branches:
       - "**"
@@ -82,7 +78,7 @@ jobs:
       - name: Cache coverage report
         uses: actions/cache@v4
         with:
-          path: coverage/*
+          path: coverage
           key: ${{ runner.os }}-coverage-${{ github.run_id }}
 
   prettier:
@@ -111,7 +107,7 @@ jobs:
       - name: Restore coverage report
         uses: actions/cache@v3
         with:
-          path: coverage/*
+          path: coverage
           key: ${{ runner.os }}-coverage-${{ github.run_id }}
 
       - name: SonarQube Scan
