@@ -64,8 +64,11 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
+      - name: Install tarpaulin
+        run: cargo install cargo-tarpaulin
+
       - name: Run tests
-        run: cargo test
+        run: cargo tarpaulin --fail-under 100 --output-dir=./coverage --exclude-files="*/tests/*"
 
   prettier:
     runs-on: ubuntu-latest
