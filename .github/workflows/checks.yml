@@ -132,7 +132,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           merge-multiple: true
-          path: ./coverage/${{ matrix.os }}
+          path: ./coverage
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5
