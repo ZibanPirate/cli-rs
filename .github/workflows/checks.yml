@@ -57,7 +57,11 @@ jobs:
         run: cargo clippy -- -D warnings
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-latest, windows-latest]
     steps:
       - name: Check out
         uses: actions/checkout@v4
@@ -73,12 +77,12 @@ jobs:
         run: cargo binstall cargo-tarpaulin
 
       - name: Run tests
-        run: cargo tarpaulin --out Lcov --output-dir=./coverage --exclude-files="*/tests/*"
+        run: cargo tarpaulin --out Lcov --output-dir=./coverage/${{ matrix.os }} --exclude-files="*/tests/*"
 
       - name: Cache coverage report
         uses: actions/cache@v4
         with:
-          path: coverage/lcov.info
+          path: coverage/*
           key: ${{ runner.os }}-coverage-${{ github.run_id }}
 
   prettier:
@@ -107,7 +111,7 @@ jobs:
       - name: Restore coverage report
         uses: actions/cache@v3
         with:
-          path: coverage/lcov.info
+          path: coverage/*
           key: ${{ runner.os }}-coverage-${{ github.run_id }}
 
       - name: SonarQube Scan
