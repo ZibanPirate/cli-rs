@@ -1,0 +1,14 @@
+[package]
+name = "cli-man"
+description = "install common cli tools on-demand"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+keywords = ["cargo-script", "script", "install", "cli"]
+categories = ["command-line-utilities"]
+
+[dependencies]
+reqwest = { workspace = true }
+zip = { workspace = true }
