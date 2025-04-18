@@ -1,0 +1,13 @@
+[package]
+name = "cli-run"
+description = "run a command line tool and stream its output"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+keywords = ["cargo-script", "script", "install", "cli"]
+categories = ["command-line-utilities"]
+
+[dependencies]
+dotenv = { workspace = true }
