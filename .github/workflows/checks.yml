@@ -21,7 +21,7 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
-          key: ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ matrix.os }}-rust-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build
         run: cargo build
@@ -43,7 +43,7 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
-          key: ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ matrix.os }}-rust-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Check formatting
         run: cargo fmt --all -- --check
@@ -65,7 +65,7 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
-          key: ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ matrix.os }}-rust-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Run clippy
         run: cargo clippy -- -D warnings
@@ -83,14 +83,14 @@ jobs:
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - uses: Swatinem/rust-cache@v2
-        with:
-          key: ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.lock') }}
-
       - uses: cargo-bins/cargo-binstall@main
 
       - name: Install tarpaulin
         run: cargo binstall cargo-tarpaulin
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.os }}-rust-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Run tests
         run: cargo tarpaulin --out Lcov --output-dir=./coverage/${{ matrix.os }} --exclude-files="*/tests/*"
