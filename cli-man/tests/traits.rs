@@ -75,11 +75,13 @@ fn test_uninstall_existing_dir() {
     use std::fs;
     use std::io::Write;
 
-    let bin_dir = "/tmp/cli-man-test/testcli/1.0.0";
-    let bin_path = format!("{}/testcli", bin_dir);
+    // Create the full directory structure
+    let version_dir = "/tmp/cli-man-test/testcli/1.0.0";
+    let bin_path = format!("{}/testcli", version_dir);
+    let tool_dir = "/tmp/cli-man-test/testcli"; // This is what actually gets removed
 
     // Create the directory and a dummy file
-    fs::create_dir_all(bin_dir).unwrap();
+    fs::create_dir_all(version_dir).unwrap();
     let mut file = fs::File::create(&bin_path).unwrap();
     writeln!(file, "dummy").unwrap();
 
@@ -88,10 +90,10 @@ fn test_uninstall_existing_dir() {
     };
 
     // Directory should exist before uninstall
-    assert!(std::path::Path::new(bin_dir).exists());
+    assert!(std::path::Path::new(tool_dir).exists());
 
     cli.uninstall();
 
     // Directory should not exist after uninstall
-    assert!(!std::path::Path::new(bin_dir).exists());
+    assert!(!std::path::Path::new(tool_dir).exists());
 }
