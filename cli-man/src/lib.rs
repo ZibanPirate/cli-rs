@@ -1,7 +1,8 @@
-use std::path::PathBuf;
+mod downloader;
+pub mod terraform;
 
-#[cfg(target_os = "windows")]
-const WINDOWS_SUFFIX: &str = ".exe";
+pub use terraform::*;
+use std::path::PathBuf;
 
 pub trait CliInstaller {
     fn name(&self) -> &str;
