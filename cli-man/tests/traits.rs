@@ -76,9 +76,9 @@ fn test_uninstall_existing_dir() {
     use std::io::Write;
 
     // Create the full directory structure
-    let version_dir = "/tmp/cli-man-test/testcli/1.0.0";
+    let version_dir = "./tmp/cli-man-test/testcli/1.0.0";
     let bin_path = format!("{}/testcli", version_dir);
-    let tool_dir = "/tmp/cli-man-test/testcli"; // This is what actually gets removed
+    let tool_dir = "./tmp/cli-man-test/testcli"; // This is what actually gets removed
 
     // Create the directory and a dummy file
     fs::create_dir_all(version_dir).unwrap();
