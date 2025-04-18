@@ -71,7 +71,13 @@ jobs:
 
       - name: Run tests
         # todo-zm: bring back coverage threshold to 100
-        run: cargo tarpaulin --fail-under 50 --output-dir=./coverage --exclude-files="*/tests/*"
+        run: cargo tarpaulin --out Lcov --fail-under 50 --output-dir=./coverage --exclude-files="*/tests/*"
+
+      - name: Cache coverage report
+        uses: actions/cache@v4
+        with:
+          path: coverage/lcov.info
+          key: ${{ runner.os }}-coverage-${{ github.run_id }}
 
   prettier:
     runs-on: ubuntu-latest
@@ -93,7 +99,15 @@ jobs:
     needs: [build, fmt, clippy, test, prettier]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Restore coverage report
+        uses: actions/cache@v3
+        with:
+          path: coverage/lcov.info
+          key: ${{ runner.os }}-coverage-${{ github.run_id }}
+
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5
         env:
