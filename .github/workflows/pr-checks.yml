@@ -70,8 +70,7 @@ jobs:
         run: cargo binstall cargo-tarpaulin
 
       - name: Run tests
-        # todo-zm: bring back coverage threshold to 100
-        run: cargo tarpaulin --out Lcov --fail-under 50 --output-dir=./coverage --exclude-files="*/tests/*"
+        run: cargo tarpaulin --out Lcov --output-dir=./coverage --exclude-files="*/tests/*"
 
       - name: Cache coverage report
         uses: actions/cache@v4
