@@ -1,5 +1,6 @@
 use dotenv::dotenv;
 use std::{
+    collections::HashMap,
     env, fs,
     io::{self, BufReader, Read, Write},
     path::PathBuf,
@@ -23,14 +24,21 @@ pub fn get_cli_run_cwd() -> PathBuf {
 }
 
 pub fn cli_run(cmd: impl Into<PathBuf>, args: Vec<impl Into<String>>) {
-    // Execute cmd with real-time output forwarding
-    let mut child = Command::new(cmd.into())
-        .current_dir(get_cli_run_cwd())
-        .args(args.into_iter().map(Into::into).collect::<Vec<String>>())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .expect("Failed to execute command");
+    let mut command = Command::new(cmd.into());
+    command.current_dir(get_cli_run_cwd());
+    command.envs(env::vars());
+    command.args(args.into_iter().map(Into::into).collect::<Vec<String>>());
+    command.stdout(Stdio::piped());
+    command.stderr(Stdio::piped());
+
+    if let Err(e) = run_cmd_and_stream_output(&mut command) {
+        eprintln!("Error running command: {}", e);
+        std::process::exit(1);
+    }
+}
+
+fn run_cmd_and_stream_output(cmd: &mut Command) -> Result<(), io::Error> {
+    let mut child = cmd.spawn()?;
 
     let stdout = child.stdout.take().expect("Failed to capture stdout");
     let stderr = child.stderr.take().expect("Failed to capture stderr");
@@ -66,15 +74,56 @@ pub fn cli_run(cmd: impl Into<PathBuf>, args: Vec<impl Into<String>>) {
     });
 
     // Wait for the process to complete
-    let status = child.wait().expect("Failed to wait on child process");
+    let status = child.wait()?;
 
     // Wait for the output forwarding to complete
     stdout_thread.join().expect("Failed to join stdout thread");
     stderr_thread.join().expect("Failed to join stderr thread");
 
-    let code = status.code().unwrap_or(1);
+    if !status.success() {
+        return Err(io::Error::new(
+            io::ErrorKind::Other,
+            format!("Command failed with exit code: {}", status),
+        ));
+    }
 
-    if code != 0 {
-        std::process::exit(code);
+    Ok(())
+}
+
+pub struct CliRun {
+    cwd: PathBuf,
+    extra_envs: HashMap<String, String>,
+}
+
+impl CliRun {
+    pub fn new() -> CliRun {
+        let cwd = get_cli_run_cwd();
+        let extra_envs = HashMap::new();
+        CliRun { cwd, extra_envs }
+    }
+
+    pub fn with_relative_cwd(self, cwd: impl Into<PathBuf>) -> CliRun {
+        let cwd = self.cwd.join(cwd.into());
+        let cwd = fs::canonicalize(cwd).unwrap();
+
+        CliRun { cwd, ..self }
+    }
+
+    pub fn with_extra_envs(self, extra_envs: HashMap<String, String>) -> CliRun {
+        CliRun { extra_envs, ..self }
+    }
+
+    pub fn run(&self, cmd: impl Into<PathBuf>, args: Vec<impl Into<String>>) {
+        let mut command = Command::new(cmd.into());
+        command.current_dir(&self.cwd);
+        command.envs(&self.extra_envs);
+        command.args(args.into_iter().map(Into::into).collect::<Vec<String>>());
+        command.stdout(Stdio::piped());
+        command.stderr(Stdio::piped());
+
+        if let Err(e) = run_cmd_and_stream_output(&mut command) {
+            eprintln!("Error running command: {}", e);
+            std::process::exit(1);
+        }
     }
 }
