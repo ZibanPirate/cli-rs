@@ -19,7 +19,7 @@ pub fn get_cli_run_cwd() -> PathBuf {
             )
         });
 
-    let cli_run_cwd = cli_run_cwd.replace("~", &env::var("HOME").unwrap());
+    let cli_run_cwd = cli_run_cwd.replace("~", &env::var("HOME").unwrap_or("~".to_string()));
     fs::canonicalize(cli_run_cwd).unwrap()
 }
 
