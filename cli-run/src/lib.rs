@@ -24,16 +24,112 @@ pub fn get_cli_run_cwd() -> PathBuf {
 }
 
 pub fn cli_run(cmd: impl Into<PathBuf>, args: Vec<impl Into<String>>) {
-    let mut command = Command::new(cmd.into());
-    command.current_dir(get_cli_run_cwd());
-    command.envs(env::vars());
-    command.args(args.into_iter().map(Into::into).collect::<Vec<String>>());
-    command.stdout(Stdio::piped());
-    command.stderr(Stdio::piped());
+    #[cfg(windows)]
+    {
+        use std::env;
+        let mut cmd_path = cmd.into();
+        let mut is_exe = false;
+        // If not absolute, search in PATH
+        if !cmd_path.is_absolute() {
+            let cmd_osstr = cmd_path.file_name().unwrap();
+            let mut found = None;
+            if let Ok(paths) = env::var("PATH") {
+                for p in env::split_paths(&paths) {
+                    let mut candidate = p.join(cmd_osstr);
+                    // Check for .exe first
+                    let mut exe_candidate = candidate.clone();
+                    exe_candidate.set_extension("exe");
+                    if exe_candidate.exists() {
+                        found = Some(exe_candidate);
+                        is_exe = true;
+                        break;
+                    }
+                    // Then check for .ps1
+                    if candidate
+                        .extension()
+                        .map(|ext| ext != "ps1")
+                        .unwrap_or(true)
+                    {
+                        candidate.set_extension("ps1");
+                    }
+                    if candidate.exists() {
+                        found = Some(candidate);
+                        break;
+                    }
+                }
+            }
+            if let Some(path) = found {
+                cmd_path = path;
+            } else {
+                // fallback: just add .ps1 if not present
+                if cmd_path.extension().map(|ext| ext != "ps1").unwrap_or(true) {
+                    cmd_path.set_extension("ps1");
+                }
+            }
+        } else {
+            // Check for .exe
+            if cmd_path
+                .extension()
+                .map(|ext| ext == "exe")
+                .unwrap_or(false)
+                && cmd_path.exists()
+            {
+                is_exe = true;
+            } else {
+                // Ensure .ps1 extension
+                if cmd_path.extension().map(|ext| ext != "ps1").unwrap_or(true) {
+                    cmd_path.set_extension("ps1");
+                }
+            }
+        }
+        let args_vec: Vec<String> = args.into_iter().map(Into::into).collect();
+        if is_exe {
+            let mut command = Command::new(&cmd_path);
+            command.current_dir(get_cli_run_cwd());
+            command.envs(env::vars());
+            command.args(args_vec);
+            command.stdout(Stdio::piped());
+            command.stderr(Stdio::piped());
 
-    if let Err(e) = run_cmd_and_stream_output(&mut command) {
-        eprintln!("Error running command: {}", e);
-        std::process::exit(1);
+            if let Err(e) = run_cmd_and_stream_output(&mut command) {
+                eprintln!("Error running command: {}", e);
+                std::process::exit(1);
+            }
+        } else {
+            let mut ps_args = vec![
+                "-ExecutionPolicy".to_string(),
+                "RemoteSigned".to_string(),
+                "-File".to_string(),
+                cmd_path.to_string_lossy().to_string(),
+            ];
+            ps_args.extend(args_vec);
+
+            let mut command = Command::new("powershell");
+            command.current_dir(get_cli_run_cwd());
+            command.envs(env::vars());
+            command.args(ps_args);
+            command.stdout(Stdio::piped());
+            command.stderr(Stdio::piped());
+
+            if let Err(e) = run_cmd_and_stream_output(&mut command) {
+                eprintln!("Error running command: {}", e);
+                std::process::exit(1);
+            }
+        }
+    }
+    #[cfg(not(windows))]
+    {
+        let mut command = Command::new(cmd.into());
+        command.current_dir(get_cli_run_cwd());
+        command.envs(env::vars());
+        command.args(args.into_iter().map(Into::into).collect::<Vec<String>>());
+        command.stdout(Stdio::piped());
+        command.stderr(Stdio::piped());
+
+        if let Err(e) = run_cmd_and_stream_output(&mut command) {
+            eprintln!("Error running command: {}", e);
+            std::process::exit(1);
+        }
     }
 }
 
@@ -114,16 +210,114 @@ impl CliRun {
     }
 
     pub fn run(&self, cmd: impl Into<PathBuf>, args: Vec<impl Into<String>>) {
-        let mut command = Command::new(cmd.into());
-        command.current_dir(&self.cwd);
-        command.envs(&self.extra_envs);
-        command.args(args.into_iter().map(Into::into).collect::<Vec<String>>());
-        command.stdout(Stdio::piped());
-        command.stderr(Stdio::piped());
+        #[cfg(windows)]
+        {
+            use std::env;
+            let mut cmd_path = cmd.into();
+            let mut is_exe = false;
+            // If not absolute, search in PATH
+            if !cmd_path.is_absolute() {
+                let cmd_osstr = cmd_path.file_name().unwrap();
+                let mut found = None;
+                if let Ok(paths) = env::var("PATH") {
+                    for p in env::split_paths(&paths) {
+                        let mut candidate = p.join(cmd_osstr);
+                        // Check for .exe first
+                        let mut exe_candidate = candidate.clone();
+                        exe_candidate.set_extension("exe");
+                        if exe_candidate.exists() {
+                            found = Some(exe_candidate);
+                            is_exe = true;
+                            break;
+                        }
+                        // Then check for .ps1
+                        if candidate
+                            .extension()
+                            .map(|ext| ext != "ps1")
+                            .unwrap_or(true)
+                        {
+                            candidate.set_extension("ps1");
+                        }
+                        if candidate.exists() {
+                            found = Some(candidate);
+                            break;
+                        }
+                    }
+                }
+                if let Some(path) = found {
+                    cmd_path = path;
+                } else {
+                    // fallback: just add .ps1 if not present
+                    if cmd_path.extension().map(|ext| ext != "ps1").unwrap_or(true) {
+                        cmd_path.set_extension("ps1");
+                    }
+                }
+            } else {
+                // Check for .exe
+                if cmd_path
+                    .extension()
+                    .map(|ext| ext == "exe")
+                    .unwrap_or(false)
+                    && cmd_path.exists()
+                {
+                    is_exe = true;
+                } else {
+                    // Ensure .ps1 extension
+                    if cmd_path.extension().map(|ext| ext != "ps1").unwrap_or(true) {
+                        cmd_path.set_extension("ps1");
+                    }
+                }
+            }
+            let args_vec: Vec<String> = args.into_iter().map(Into::into).collect();
+            if is_exe {
+                let mut command = Command::new(&cmd_path);
+                command.current_dir(&self.cwd);
+                command.envs(&self.extra_envs);
+                command.args(args_vec);
+                command.stdout(Stdio::piped());
+                command.stderr(Stdio::piped());
 
-        if let Err(e) = run_cmd_and_stream_output(&mut command) {
-            eprintln!("Error running command: {}", e);
-            std::process::exit(1);
+                println!("zako {:?}", command);
+
+                if let Err(e) = run_cmd_and_stream_output(&mut command) {
+                    eprintln!("Error running command: {}", e);
+                    std::process::exit(1);
+                }
+            } else {
+                let mut ps_args = vec![
+                    "-ExecutionPolicy".to_string(),
+                    "RemoteSigned".to_string(),
+                    "-File".to_string(),
+                    cmd_path.to_string_lossy().to_string(),
+                ];
+                ps_args.extend(args_vec);
+
+                let mut command = Command::new("powershell");
+                command.current_dir(&self.cwd);
+                command.envs(&self.extra_envs);
+                command.args(ps_args);
+                command.stdout(Stdio::piped());
+                command.stderr(Stdio::piped());
+
+                if let Err(e) = run_cmd_and_stream_output(&mut command) {
+                    eprintln!("Error running command: {}", e);
+                    std::process::exit(1);
+                }
+            }
+        }
+        #[cfg(not(windows))]
+        {
+            let mut command = Command::new(cmd.into());
+            command.current_dir(&self.cwd);
+            command.envs(&self.extra_envs);
+            command.args(args.into_iter().map(Into::into).collect::<Vec<String>>());
+            command.stdout(Stdio::piped());
+            command.stderr(Stdio::piped());
+
+            if let Err(e) = run_cmd_and_stream_output(&mut command) {
+                eprintln!("Error running command: {}", e);
+                std::process::exit(1);
+            }
         }
     }
 }
